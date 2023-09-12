@@ -1,0 +1,18 @@
+[package]
+name = "eras-tour-nft"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+erc721 = { workspace = true, default-features = false, features = ["metadata"] }
+storage = { workspace = true }
+
+[dev_dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+
+[features]
+testutils = ["soroban-sdk/testutils"]
