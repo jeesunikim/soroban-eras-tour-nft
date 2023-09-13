@@ -53,7 +53,7 @@ impl MyNFTCollection {
         erc721::ERC721Contract::balance_of(env, owner)
     }
 
-    pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, token_id: u32) {
+    pub fn transfer_from(env: Env, from: Address, to: Address, token_id: u32) {
         erc721::ERC721Contract::transfer_from(env, spender, from, to, token_id)
     }
 

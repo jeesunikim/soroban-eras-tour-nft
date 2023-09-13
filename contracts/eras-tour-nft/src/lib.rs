@@ -5,19 +5,24 @@ use soroban_sdk::{
     contract, contractimpl, panic_with_error, token, Address, Bytes, BytesN, Env, String, Vec
 };
 
+// pub trait ConcertNftTrait {
+//     fn initialize(e: Env, owner: Address);
+//     fn mint(e: Env, owner: Address, token: Address);
+//     fn balance_of(e: Env, owner: Address) -> u32;
+//     fn transfer(e: Env, from: Address, to: Address, token_id: u32);
+//     fn burn(e: Env, from: Address, token_id: u32);
+// }
+
 #[contract]
-pub struct TourNftContract;
+pub struct ConcertNftContract;
 
 #[contractimpl]
-impl TourNftContract {
+impl ConcertNftContract {
     pub fn initialize(env: Env, admin: Address) {
         let name = String::from_slice(&env, "Non-Fungible Token");
         let sym = String::from_slice(&env, "NFT");
         erc721::ERC721Contract::initialize(env, admin, name, sym);
     }
-
-    // contract upgrade (e.g. to fix bugs or add a new functionality)
-    pub fn upgrade(env: Env, wasm_hash: BytesN<32>) {}
 
     // minting
     pub fn mint(env: Env, to: Address, uri: String) {
@@ -52,43 +57,8 @@ impl TourNftContract {
     }
 
     // @todo: use soroban's timelock to burn all the unclaimed tokens
-    pub fun burn(env: Env, from: Address, token_id:u32) {
+    pub fn burn(env: Env, from: Address, token_id:u32) {
 
     }
 
-    pub fn approve(
-        env: Env,
-        caller: Address,
-        operator: Option<Address>,
-        token_id: u32,
-        expiration_ledger: u32,
-    ) {
-        erc721::ERC721Contract::approve(env, caller, operator, token_id, expiration_ledger)
-    }
-
-    pub fn set_approval_for_all(
-        env: Env,
-        caller: Address,
-        owner: Address,
-        operator: Address,
-        approved: bool,
-        expiration_ledger: u32,
-    ) {
-        erc721::ERC721Contract::set_approval_for_all(
-            env,
-            caller,
-            owner,
-            operator,
-            approved,
-            expiration_ledger,
-        )
-    }
-
-    pub fn get_approved(env: Env, token_id: u32) -> Option<Address> {
-        erc721::ERC721Contract::get_approved(env, token_id)
-    }
-
-    pub fn is_approval_for_all(env: Env, owner: Address, operator: Address) -> bool {
-        erc721::ERC721Contract::is_approval_for_all(env, owner, operator)
-    }
 }

@@ -39,7 +39,7 @@ fn simpl_test() {
     assert_eq!(client.token_of_owner_by_index(&user1, &1), 3);
     assert_eq!(client.token_of_owner_by_index(&user2, &0), 2);
 
-    client.transfer_from(&user1, &user1, &user2, &3);
+    client.transfer_from(&user1, &user2, &3);
 
     assert_eq!(client.balance_of(&user1), 1);
     assert_eq!(client.balance_of(&user2), 2);
