@@ -2,7 +2,7 @@
 
 use erc721::{DataKey, ERC721Metadata, Error, ERC721};
 use soroban_sdk::{
-    contract, contractimpl, panic_with_error, token, Address, Bytes, BytesN, Env, String, Vec
+    contract, contractimpl, contracttype, token, Address, Env, String
 };
 
 // pub trait ConcertNftTrait {
@@ -13,6 +13,14 @@ use soroban_sdk::{
 //     fn burn(e: Env, from: Address, token_id: u32);
 // }
 
+// Metadata to store NFT information
+#[contracttype]
+pub enum DatakeyMetadata {
+    Name,
+    Symbol,
+    Uri(u32),
+}
+
 #[contract]
 pub struct ConcertNftContract;
 
@@ -21,12 +29,15 @@ impl ConcertNftContract {
     pub fn initialize(env: Env, admin: Address) {
         let name = String::from_slice(&env, "Non-Fungible Token");
         let sym = String::from_slice(&env, "NFT");
+
         erc721::ERC721Contract::initialize(env, admin, name, sym);
+
+        // set the admin as a contract owner
     }
 
     // minting
     pub fn mint(env: Env, to: Address, uri: String) {
-        // Check ownly the admin can mint
+        // Check only the admin can mint
         erc721::get_admin(&env).require_auth();
 
         // Get and increment token id
@@ -45,6 +56,8 @@ impl ConcertNftContract {
     // @return owner's balance
     pub fn balance_of(env: Env, owner: Address) -> u32 {
         erc721::ERC721Contract::balance_of(env, owner)
+
+        
     }
 
     // Transfer ownership of an NFT
