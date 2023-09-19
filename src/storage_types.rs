@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, contracttype, Address, String};
+use soroban_sdk::{contracterror, contracttype, Address, Symbol};
 
 // @todo: find out the difference between 'pub const' and 'pub(crate) const
 pub(crate) const INSTANCE_BUMP_AMOUNT: u32 = 34560; // 2 days
@@ -13,34 +13,29 @@ pub enum DatakeyMetadata {
     // Uri, // instance
 }
 
-// #[derive(Clone)]
-// #[contracttype]
-// pub struct SeatDataKey {
-//     pub symbol: String,
-//     pub number: Number,
-// }
-
-// #[contracttype]
-// pub struct SeatValue {
-//     pub amount: i128,
-//     pub expiration_ledger: u32,
-// }
-
-#[derive(Clone)]
-#[contracttype]
-pub enum Seats {
-    Token(String, u32),
-    Seat(u32),
-}
-
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
     TokenId,
     Balance(Address),
-    Nonce(Address),
-    State(Address),
+    TokenOwner(u32),
+    // Nonce(Address),
+    // State(Address),
     Admin,
+}
+
+#[contracttype]
+pub enum ErasDataKey {
+    TokenId,
+    AssetAddress,
+    // Price,
+}
+
+#[derive(Clone)]
+#[contracttype]
+pub enum Seats {
+    Token(Symbol, u32),
+    Seat(u32),
 }
 
 #[contracterror]
