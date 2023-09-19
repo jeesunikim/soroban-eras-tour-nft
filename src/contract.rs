@@ -1,7 +1,7 @@
 use crate::event;
 use crate::admin::{has_admin, read_admin, write_admin};
 use soroban_sdk::{
-    contract, contractimpl, contracttype, log, Address, Env, String
+    contract, contractimpl, contracttype, log, Address, Env, String, Symbol
 };
 use crate::storage_types::{BALANCE_BUMP_AMOUNT, DataKey, DatakeyMetadata, INSTANCE_BUMP_AMOUNT, Error, Seats, MAX_SEATS};
 
@@ -27,6 +27,7 @@ impl ErasNftContract {
         //     panic!("Decimal must fit in a u8");
         // }
 
+        // env.storage().instance().bump(10000);
         env.storage().instance().set(&DatakeyMetadata::Name, &name);
         env.storage()
             .instance()
@@ -51,8 +52,10 @@ impl ErasNftContract {
 
     // I skipped uri; usually nft has a property that includes a link but I omitted
     // mint: enables admin to mint nfts
-    pub fn mint(env: Env, to: Address, symbol: String, number: u32) -> Result<u32, Error>{
+    pub fn mint(env: Env, to: Address, symbol: Symbol, number: u32) -> Result<u32, Error>{
         to.require_auth();
+
+        env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
 
          // Check if the seat is taken
          let key: Seats = Seats::Token(symbol.clone(), number);
@@ -61,10 +64,7 @@ impl ErasNftContract {
         }
         env.storage().instance().set(&key, &(symbol, number));
 
-        // let token_id: u32 = DataKey::TokenId.get(&env).unwrap_or(0);
-
         let token_id: u32 = env.storage().instance().get(&DataKey::TokenId).unwrap_or(0); // If no value set, assume 0.
-        log!(&env, "count: {}", token_id);
 
         // Check if we reached the max supply
         if token_id > MAX_SEATS {
@@ -73,6 +73,15 @@ impl ErasNftContract {
         }
 
         env.storage().instance().set(&DataKey::TokenId, &(token_id + 1));
+
+        // Minting
+        if !env.storage().persistent().has(&DataKey::TokenOwner(token_id)) {
+            env.storage().persistent().set(&DataKey::TokenOwner(token_id), &to);
+
+            let balance: i128 = Self::balance_of(env.clone(), to.clone());
+            env.storage().persistent().set(&DataKey::Balance(to.clone()), &(balance + 1));
+        }
+
         event::mint(&env, to, token_id);
         Ok(token_id)
     }

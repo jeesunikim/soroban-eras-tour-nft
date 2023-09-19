@@ -13,32 +13,33 @@ extern crate std;
 
 use crate::{contract::ErasNftContract, ErasNftContractClient};
 use soroban_sdk::{
+    log,
     symbol_short,
     testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
-    Address, Env, IntoVal, Symbol,
+    Address, Env, IntoVal,
 };
 
 fn create_token<'a>(env: &Env, admin: &Address) -> ErasNftContractClient<'a> {
     let token = ErasNftContractClient::new(env, &env.register_contract(None, ErasNftContract {}));
     token.initialize(admin, &"Eras Tour".into_val(env), &"Eras".into_val(env));
+    
     token
 }
 
 #[test]
-fn test() {
+fn init() {
     let env = Env::default();
     env.mock_all_auths();
 
     let admin = Address::random(&env);
 
     let swift_fan_1 = Address::random(&env);
-    let swift_fan_2 = Address::random(&env);
-    let swift_fan_3 = Address::random(&env);
+    // let swift_fan_2 = Address::random(&env);
+    // let swift_fan_3 = Address::random(&env);
+
     let eras_token = create_token(&env, &admin);
 
-    // @todo:
-    // mint 50 nfts with a different metadata to indicate a seat number
-    // eras_token.mint(&500);
+    eras_token.mint(&swift_fan_1, &symbol_short!("A"), &1);
 
     assert_eq!(
         env.auths(),
@@ -48,12 +49,14 @@ fn test() {
                 function: AuthorizedFunction::Contract((
                     eras_token.address.clone(),
                     symbol_short!("mint"),
-                    (&swift_fan_1, 1000_i128).into_val(&env),
+                    (&swift_fan_1, &symbol_short!("A"), 1_u32).into_val(&env),
                 )),
                 sub_invocations: std::vec![]
             }
         )]
     );
+
+    assert_eq!(eras_token.balance_of(&swift_fan_1), 1);
 
     // assert_eq!(eras_token.balance(), 1000);
 }
