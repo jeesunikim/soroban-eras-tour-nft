@@ -23,7 +23,6 @@ impl ErasNftContract {
         // set the admin of ErasNftContract
         write_admin(&env, &admin);
 
-        // env.storage().instance().bump(10000);
         env.storage().instance().set(&DatakeyMetadata::Name, &name);
         env.storage()
             .instance()
@@ -32,14 +31,11 @@ impl ErasNftContract {
 
     // @return the total supply of the requested address
     pub fn balance_of(env: Env, owner: Address) -> i128 {
-        env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
         let key = DataKey::Balance(owner);
 
         log!(&env, "balance_of - key: {}", key);
         
         if let Some(balance) = env.storage().persistent().get::<DataKey, i128>(&key) {
-            env.storage().persistent().bump(&key, BALANCE_BUMP_AMOUNT);
             balance
         } else {
             0
@@ -56,8 +52,6 @@ impl ErasNftContract {
         if env.storage().persistent().has(&Seats::Token(seat_num)) {
             panic!("seat already taken");
         }
-        
-        env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
 
         let token_id: u32 = env.storage().instance().get(&DataKey::TokenId).unwrap_or(0); // If no value set, assume 0.
 
@@ -77,13 +71,10 @@ impl ErasNftContract {
         // Minting
         if !env.storage().persistent().has(&DataKey::TokenOwner(token_id)) {
             env.storage().persistent().set(&DataKey::TokenOwner(token_id), &to);
-            env.storage().persistent().bump(&DataKey::TokenOwner(token_id), BALANCE_BUMP_AMOUNT);
 
             env.storage().persistent().set(&Seats::Token(seat_num), &token_id);
-            env.storage().persistent().bump(&Seats::Token(seat_num), BALANCE_BUMP_AMOUNT);
 
             env.storage().persistent().set(&Seats::Seat(token_id), &seat_num);
-            env.storage().persistent().bump(&Seats::Seat(token_id), BALANCE_BUMP_AMOUNT);
 
             let balance: i128 = Self::balance_of(env.clone(), to.clone());
             env.storage().persistent().set(&DataKey::Balance(to.clone()), &(balance + 1));
