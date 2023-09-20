@@ -3,7 +3,7 @@ use crate::admin::{has_admin, read_admin, write_admin};
 use soroban_sdk::{
     contract, contractimpl, contracttype, log, panic_with_error, Address, Env, String
 };
-use crate::storage_types::{BALANCE_BUMP_AMOUNT, DataKey, DatakeyMetadata, Error, INSTANCE_BUMP_AMOUNT, Seats, MAX_SEATS};
+use crate::storage_types::{DataKey, DatakeyMetadata, Error, Seats, MAX_SEATS};
 
 #[contracttype]
 pub struct Id();
@@ -27,19 +27,6 @@ impl ErasNftContract {
         env.storage()
             .instance()
             .set(&DatakeyMetadata::Symbol, &symbol);
-    }
-
-    // @return the total supply of the requested address
-    pub fn balance_of(env: Env, owner: Address) -> i128 {
-        let key = DataKey::Balance(owner);
-
-        log!(&env, "balance_of - key: {}", key);
-        
-        if let Some(balance) = env.storage().persistent().get::<DataKey, i128>(&key) {
-            balance
-        } else {
-            0
-        }
     }
 
     // I skipped uri; usually nft has a property that includes a link but I omitted
@@ -75,9 +62,6 @@ impl ErasNftContract {
             env.storage().persistent().set(&Seats::Token(seat_num), &token_id);
 
             env.storage().persistent().set(&Seats::Seat(token_id), &seat_num);
-
-            let balance: i128 = Self::balance_of(env.clone(), to.clone());
-            env.storage().persistent().set(&DataKey::Balance(to.clone()), &(balance + 1));
         }
 
         event::mint(&env, to, token_id);
