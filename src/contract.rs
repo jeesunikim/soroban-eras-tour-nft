@@ -30,13 +30,13 @@ impl ErasNftContract {
             .set(&DatakeyMetadata::Symbol, &symbol);
     }
 
-    // @return the balance of the requested address
+    // @return the total supply of the requested address
     pub fn balance_of(env: Env, owner: Address) -> i128 {
         env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
 
         let key = DataKey::Balance(owner);
 
-        log!(&env, "key: {}", key);
+        log!(&env, "balance_of - key: {}", key);
         
         if let Some(balance) = env.storage().persistent().get::<DataKey, i128>(&key) {
             env.storage().persistent().bump(&key, BALANCE_BUMP_AMOUNT);
@@ -48,24 +48,24 @@ impl ErasNftContract {
 
     // I skipped uri; usually nft has a property that includes a link but I omitted
     // mint: enables admin to mint nfts
-    pub fn mint(env: Env, to: Address, seat_num: u32) -> Result<u32, Error>{
+    pub fn mint(env: Env, to: Address, seat_num: u32) {
         let admin = read_admin(&env);
         admin.require_auth();
 
-        env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
-
-         // Check if the seat is taken
-         if env.storage().persistent().has(&Seats::Token(seat_num)) {
-            panic_with_error!(&env, Error::SeatTaken);
+        // Check if the seat is taken
+        if env.storage().persistent().has(&Seats::Token(seat_num)) {
+            panic!("seat already taken");
         }
+        
+        env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
 
         let token_id: u32 = env.storage().instance().get(&DataKey::TokenId).unwrap_or(0); // If no value set, assume 0.
 
-        let test: bool = env.storage().persistent().has(&Seats::Token(seat_num));
+        let is_taken: bool = env.storage().persistent().has(&Seats::Token(seat_num));
 
-        log!(&env, "test: {}", test);
-        log!(&env, "seat_num: {}", seat_num);
-        log!(&env, "token_id: {}", token_id);
+        log!(&env, "mint - seat_num: {}", seat_num);
+        log!(&env, "mint - token_id: {}", token_id);
+        log!(&env, "mint - is_seat_num_taken: {}", is_taken);
 
         // Check if we reached the max supply
         if token_id > MAX_SEATS {
@@ -90,7 +90,19 @@ impl ErasNftContract {
         }
 
         event::mint(&env, to, token_id);
-        Ok(token_id)
+    }
+
+    pub fn owner_of(env: Env, seat_num: u32) -> Address{
+        // get a 'token_id' from 'seat_num'
+        let token_id = env.storage().persistent().get(&Seats::Token(seat_num)).unwrap_or_else(|| panic!("this seat is not taken by anyone"));
+
+        // get an address of the seat owner from 'token_id'
+        let owner = env.storage().persistent().get(&DataKey::TokenOwner(token_id)).unwrap_or_else(|| panic!("owner of this token does not exist"));
+
+        log!(&env, "owner_of - token_id {}", token_id);
+        log!(&env, "owner_of - owner {}", owner);
+
+        owner
     }
 
     // Transfer adminship of an NFT
