@@ -1,9 +1,9 @@
 use crate::event;
 use crate::admin::{has_admin, read_admin, write_admin};
 use soroban_sdk::{
-    contract, contractimpl, contracttype, log, Address, Env, String, Symbol
+    contract, contractimpl, contracttype, log, panic_with_error, Address, Env, String
 };
-use crate::storage_types::{BALANCE_BUMP_AMOUNT, DataKey, DatakeyMetadata, INSTANCE_BUMP_AMOUNT, Error, Seats, MAX_SEATS};
+use crate::storage_types::{BALANCE_BUMP_AMOUNT, DataKey, DatakeyMetadata, Error, INSTANCE_BUMP_AMOUNT, Seats, MAX_SEATS};
 
 #[contracttype]
 pub struct Id();
@@ -23,10 +23,6 @@ impl ErasNftContract {
         // set the admin of ErasNftContract
         write_admin(&env, &admin);
 
-        // if decimal > u8::MAX.into() {
-        //     panic!("Decimal must fit in a u8");
-        // }
-
         // env.storage().instance().bump(10000);
         env.storage().instance().set(&DatakeyMetadata::Name, &name);
         env.storage()
@@ -40,7 +36,7 @@ impl ErasNftContract {
 
         let key = DataKey::Balance(owner);
 
-        log!(&env, "get_banace: key: {}", key);
+        log!(&env, "key: {}", key);
         
         if let Some(balance) = env.storage().persistent().get::<DataKey, i128>(&key) {
             env.storage().persistent().bump(&key, BALANCE_BUMP_AMOUNT);
@@ -52,24 +48,28 @@ impl ErasNftContract {
 
     // I skipped uri; usually nft has a property that includes a link but I omitted
     // mint: enables admin to mint nfts
-    pub fn mint(env: Env, to: Address, symbol: Symbol, number: u32) -> Result<u32, Error>{
-        to.require_auth();
+    pub fn mint(env: Env, to: Address, seat_num: u32) -> Result<u32, Error>{
+        let admin = read_admin(&env);
+        admin.require_auth();
 
         env.storage().instance().bump(INSTANCE_BUMP_AMOUNT);
 
          // Check if the seat is taken
-         let key: Seats = Seats::Token(symbol.clone(), number);
-         if env.storage().instance().has(&key) {
-            panic!("This seat is taken");
+         if env.storage().persistent().has(&Seats::Token(seat_num)) {
+            panic_with_error!(&env, Error::SeatTaken);
         }
-        env.storage().instance().set(&key, &(symbol, number));
 
         let token_id: u32 = env.storage().instance().get(&DataKey::TokenId).unwrap_or(0); // If no value set, assume 0.
 
+        let test: bool = env.storage().persistent().has(&Seats::Token(seat_num));
+
+        log!(&env, "test: {}", test);
+        log!(&env, "seat_num: {}", seat_num);
+        log!(&env, "token_id: {}", token_id);
+
         // Check if we reached the max supply
         if token_id > MAX_SEATS {
-            //return Err(MillionError::Exhausted);
-            panic!("Exhausted")
+            panic_with_error!(&env, Error::OutOfBounds);
         }
 
         env.storage().instance().set(&DataKey::TokenId, &(token_id + 1));
@@ -77,6 +77,13 @@ impl ErasNftContract {
         // Minting
         if !env.storage().persistent().has(&DataKey::TokenOwner(token_id)) {
             env.storage().persistent().set(&DataKey::TokenOwner(token_id), &to);
+            env.storage().persistent().bump(&DataKey::TokenOwner(token_id), BALANCE_BUMP_AMOUNT);
+
+            env.storage().persistent().set(&Seats::Token(seat_num), &token_id);
+            env.storage().persistent().bump(&Seats::Token(seat_num), BALANCE_BUMP_AMOUNT);
+
+            env.storage().persistent().set(&Seats::Seat(token_id), &seat_num);
+            env.storage().persistent().bump(&Seats::Seat(token_id), BALANCE_BUMP_AMOUNT);
 
             let balance: i128 = Self::balance_of(env.clone(), to.clone());
             env.storage().persistent().set(&DataKey::Balance(to.clone()), &(balance + 1));

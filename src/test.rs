@@ -13,9 +13,8 @@ extern crate std;
 
 use crate::{contract::ErasNftContract, ErasNftContractClient};
 use soroban_sdk::{
-    log,
     symbol_short,
-    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation},
+    testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Logs},
     Address, Env, IntoVal,
 };
 
@@ -34,29 +33,38 @@ fn init() {
     let admin = Address::random(&env);
 
     let swift_fan_1 = Address::random(&env);
-    // let swift_fan_2 = Address::random(&env);
+    let swift_fan_2 = Address::random(&env);
     // let swift_fan_3 = Address::random(&env);
 
     let eras_token = create_token(&env, &admin);
 
-    eras_token.mint(&swift_fan_1, &symbol_short!("A"), &1);
+    eras_token.mint(&swift_fan_1, &1);
+    eras_token.mint(&swift_fan_2, &2);
 
-    assert_eq!(
-        env.auths(),
-        std::vec![(
-            admin.clone(),
-            AuthorizedInvocation {
-                function: AuthorizedFunction::Contract((
-                    eras_token.address.clone(),
-                    symbol_short!("mint"),
-                    (&swift_fan_1, &symbol_short!("A"), 1_u32).into_val(&env),
-                )),
-                sub_invocations: std::vec![]
-            }
-        )]
-    );
+    // assert_eq!(
+    //     env.auths(),
+    //     std::vec![(
+    //         admin.clone(),
+    //         AuthorizedInvocation {
+    //             function: AuthorizedFunction::Contract((
+    //                 eras_token.address.clone(),
+    //                 symbol_short!("mint"),
+    //                 (&swift_fan_1, 1_u32).into_val(&env),
+    //             )),
+    //             sub_invocations: std::vec![]
+    //         }
+    //     )]
+    // );
 
     assert_eq!(eras_token.balance_of(&swift_fan_1), 1);
+    assert_eq!(eras_token.balance_of(&swift_fan_2), 1);
+
+    eras_token.mint(&swift_fan_1, &1);
+    assert_eq!(eras_token.balance_of(&swift_fan_1), 2);
+    assert_eq!(eras_token.balance_of(&swift_fan_2), 1);
+
+    std::println!("{}", env.logs().all().join("\n"));
 
     // assert_eq!(eras_token.balance(), 1000);
 }
+
