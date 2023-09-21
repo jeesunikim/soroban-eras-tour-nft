@@ -58,10 +58,18 @@ impl ErasNftContract {
     // Transfer ownership of an NFT
     // @param from: The current owner of the NFT
     // @param to: The new owner
-    // @param seat_num: The NFT to transfer
-    fn transfer(env: &Env, from: Address, to: Address, seat_num: u32) {
+    // @param seat_num: the nft to transfer
+    pub fn transfer(env: Env, from: Address, to: Address, seat_num: u32) {
         from.require_auth();
 
+        // check to make sure the receiver doesn't have a eras nft
+        if env.storage().persistent().has(&UserDataKey::Seat(to.clone())) {
+            panic!("this receiver already has a nft ticket to eras tour");
+        }
 
+        if env.storage().persistent().has(&UserDataKey::Seat(from)) {
+            env.storage().persistent().set(&UserDataKey::TokenOwner(seat_num), &to);
+            env.storage().persistent().set(&UserDataKey::Seat(to.clone()), &seat_num);
+        }
     }
 }
