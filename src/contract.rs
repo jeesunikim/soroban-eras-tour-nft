@@ -67,9 +67,10 @@ impl ErasNftContract {
             panic!("this receiver already has a nft ticket to eras tour");
         }
 
-        if env.storage().persistent().has(&UserDataKey::Seat(from)) {
-            env.storage().persistent().set(&UserDataKey::TokenOwner(seat_num), &to);
-            env.storage().persistent().set(&UserDataKey::Seat(to.clone()), &seat_num);
+        if env.storage().persistent().has(&UserDataKey::Seat(from.clone())) {
+            env.storage().persistent().remove(&UserDataKey::Seat(from));
         }
+        env.storage().persistent().set(&UserDataKey::TokenOwner(seat_num), &to);
+        env.storage().persistent().set(&UserDataKey::Seat(to.clone()), &seat_num);
     }
 }
