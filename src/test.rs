@@ -1,27 +1,24 @@
-// swift_fan related data: persistent because swift_fan must pay for himself
-// authorizations: temporary because it should not be restored
-// metadata: instance because the contract "admin" should pay
-
 // must have functionalities
-// 1. nft token admin minting 10 tickets as a token
-// 2. transferring the token to a ticket purchaser
-// 2.1 metadata to reflect the concert seating
-// 3. burning the unsold tokens
-
+// 1. erc721's function: mint, transfer, owner_of
+// 2. saving user data: Address and seat_num
 #![cfg(test)]
+
+// but the contract is a no_std crate
+// we're using std::println to log
+// and logs expect `std` to be in scope
 extern crate std;
 
 use crate::{contract::ErasNftContract, ErasNftContractClient};
 use soroban_sdk::{
-    symbol_short,
     testutils::{Address as _, Logs},
     Address, Env, IntoVal,
 };
 
 fn create_token<'a>(env: &Env, admin: &Address) -> ErasNftContractClient<'a> {
     let token = ErasNftContractClient::new(env, &env.register_contract(None, ErasNftContract {}));
-    token.initialize(admin, &"Eras Tour".into_val(env), &"Eras".into_val(env));
     
+    token.initialize(admin, &"Eras Tour".into_val(env), &"Eras".into_val(env));
+
     token
 }
 
