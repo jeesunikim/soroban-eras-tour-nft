@@ -9,8 +9,6 @@ pub struct ErasNftContract;
 
 #[contractimpl]
 impl ErasNftContract {
-    // doc says: another requirement for complying with the token interface is to write the standard metadata (decimal, name, and symbol) for the token in a specific format
-    // @todo: but I omitted decimals
     pub fn initialize(env: Env, admin: Address, name: String, symbol: String) {
         if has_admin(&env) {
             panic!("already initialized")
