@@ -16,7 +16,7 @@ use soroban_sdk::{
 
 fn create_token<'a>(env: &Env, admin: &Address) -> ErasNftContractClient<'a> {
     let token = ErasNftContractClient::new(env, &env.register_contract(None, ErasNftContract {}));
-    
+
     token.initialize(admin, &"Eras Tour".into_val(env), &"Eras".into_val(env));
 
     token
@@ -27,9 +27,9 @@ fn test_mint() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let admin = Address::random(&env);
-    let swift_fan_1 = Address::random(&env);
-    let swift_fan_2 = Address::random(&env);
+    let admin = Address::generate(&env);
+    let swift_fan_1 = Address::generate(&env);
+    let swift_fan_2 = Address::generate(&env);
 
     let eras_token = create_token(&env, &admin);
 
@@ -46,8 +46,8 @@ fn test_owner_of() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let admin = Address::random(&env);
-    let swift_fan_1 = Address::random(&env);
+    let admin = Address::generate(&env);
+    let swift_fan_1 = Address::generate(&env);
 
     let eras_token = create_token(&env, &admin);
 
@@ -63,9 +63,9 @@ fn test_transfer() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let admin = Address::random(&env);
-    let swift_fan_1 = Address::random(&env);
-    let swift_fan_2 = Address::random(&env);
+    let admin = Address::generate(&env);
+    let swift_fan_1 = Address::generate(&env);
+    let swift_fan_2 = Address::generate(&env);
 
     let eras_token = create_token(&env, &admin);
 
@@ -90,9 +90,9 @@ fn seat_already_taken() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let admin = Address::random(&env);
-    let swift_fan_1 = Address::random(&env);
-    let swift_fan_2 = Address::random(&env);
+    let admin = Address::generate(&env);
+    let swift_fan_1 = Address::generate(&env);
+    let swift_fan_2 = Address::generate(&env);
 
     let eras_token = create_token(&env, &admin);
 
