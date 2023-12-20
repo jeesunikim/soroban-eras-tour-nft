@@ -62,5 +62,5 @@ this command should output a contract id that starts with `"C..."`
 ## Acknowledgments
 
 *   [ERC-721: Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
-*   [Soroban's Advanced Tutorials: 'Tokens'](https://soroban.stellar.org/docs/advanced-tutorials/tokens) for generic token interface
-*   [millionlumenhomepage.art](https://soroban.stellar.org/docs/advanced-tutorials/tokens) I think this is the first nft project built on Soroban. It was so helpful to see what others did first. It also includes frontend portion.
+*   [Soroban's Advanced Tutorials: 'Tokens'](https://soroban.stellar.org/docs/advanced-tutorials/tokens): for generic token interface
+*   [millionlumenhomepage.art](https://soroban.stellar.org/docs/advanced-tutorials/tokens): I think this is the first nft project built on Soroban. It was so helpful to see what others did first. It also includes frontend portion.
