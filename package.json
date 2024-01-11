@@ -1,0 +1,25 @@
+{
+  "version": "0.0.0",
+  "name": "soroban-eras-tour-nft",
+  "private": true,
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "postinstall": "soroban contract bindings typescript --network futurenet --contract-id $(cat .soroban/hello-id) --output-dir node_modules/soroban-eras-tour-nft"
+  },
+  "exports": {
+    "require": "./dist/cjs/index.js",
+    "import": "./dist/esm/index.js"
+  },
+  "typings": "dist/types/index.d.ts",
+  "dependencies": {
+    "@stellar/freighter-api": "1.7.1",
+    "buffer": "6.0.3",
+    "stellar-sdk": "11.1.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "5.1.6",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
