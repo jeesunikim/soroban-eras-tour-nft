@@ -1,7 +1,11 @@
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   entry: "./frontend/src/index.ts",
+  devServer: {
+    static: "./frontend/dist",
+  },
   module: {
     rules: [
       {
@@ -11,11 +15,14 @@ module.exports = {
       },
     ],
   },
+  devtool: "inline-source-map",
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "frontend/dist"),
+    filename: "[name].bundle.js",
+    path: path.resolve(__dirname, "frontend/dist/js"),
+    publicPath: "/",
+    clean: true,
   },
 };
