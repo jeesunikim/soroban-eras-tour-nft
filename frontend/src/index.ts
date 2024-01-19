@@ -1,7 +1,7 @@
 import { isAllowed, setAllowed, getUserInfo } from "@stellar/freighter-api";
 import { Contract, networks } from "eras-tour-nft-client";
 
-// Contract
+// Related to Contract
 const admin = "GD6523U5GOVMLSWC4PCNRURU4QKDR6Q76YDAIJPDJDGYFEJ43GBG7VWK";
 // freighter related
 const freighterWrapper = document.querySelector("#freighter-wrapWrapper");
@@ -53,7 +53,7 @@ if (await isAllowed()) {
   });
 }
 
-function onSelectSeat() {
+async function onSelectSeat() {
   let previous_seat: any;
   let previous_seat_color: any;
   let seats = document.querySelectorAll(`[id^="seat-"]`);
@@ -61,6 +61,13 @@ function onSelectSeat() {
   let seat_number_text = document.getElementById("seat");
 
   console.log("**LOG** seat_info: ", seat_info);
+
+  const ownerOfTx = await erasTourContract.ownerOf({
+    seat_num: 3,
+  });
+  const ownerOfTxResult = await ownerOfTx.simulate();
+
+  console.log("**LOG** ownerOfTxResult: ", ownerOfTxResult.result);
 
   seats.forEach((seat) => {
     seat.addEventListener("click", function (e) {
@@ -94,8 +101,7 @@ function onSelectSeat() {
 async function mint_seat() {
   const loggedInUserPubKey = await getPubKey();
 
-  console.log("**LOG** seat_number: ", seat_number);
-  console.log("**LOG** loggedInUserPubKey: ", loggedInUserPubKey);
+  console.log("**LOG** hasContractInit: ", hasContractInit);
 
   if (loggedInUserPubKey && seat_number) {
     if (!hasContractInit) {
@@ -109,11 +115,27 @@ async function mint_seat() {
     }
 
     if (hasContractInit) {
-      const hi = await erasTourContract.mint({
-        to: loggedInUserPubKey,
+      console.log("**LOG** hasContractInit: ", hasContractInit);
+
+      console.log("**LOG** seat_number: ", seat_number);
+      console.log("**LOG** loggedInUserPubKey: ", loggedInUserPubKey);
+
+      const tx = await erasTourContract.mint({
+        to: "GCFAHXAXDMAHPTQ35W42DD2F6LR4E5SQUBEL2RDS5Y4SDRUGMFI4PRV2",
         seat_num: seat_number,
       });
-      console.log("**LOG** hi: ", hi);
+
+      console.log("**LOG** tx: ", tx);
+      const account = await tx.getAccount();
+      const pubKey = await tx.getPublicKey();
+
+      console.log("**LOG** account: ", account);
+      console.log("**LOG** pubKey: ", pubKey);
+
+      const test = await tx.simulate();
+      console.log("**LOG** test: ", test);
+      const test2 = await tx.signAndSend();
+      console.log("**LOG** test2: ", test2);
     }
   }
 }

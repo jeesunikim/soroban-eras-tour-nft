@@ -41,6 +41,7 @@ soroban contract build
 ```
 
 Once it is successfully built, its `.wasm` file should be outputted in the `target` directory. The `.wasm` file:
+
 - contains the logic of the contract, as well as the contract's specification / interface types
 - is the only artifact needed to deploy the contract, share the interface with others, or integration test against the contract
 
@@ -61,6 +62,6 @@ this command should output a contract id that starts with `"C..."`
 
 ## Acknowledgments
 
-*   [ERC-721: Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
-*   [Soroban's Advanced Tutorials: 'Tokens'](https://soroban.stellar.org/docs/advanced-tutorials/tokens): for generic token interface
-*   [millionlumenhomepage.art](https://soroban.stellar.org/docs/advanced-tutorials/tokens): I think this is the first nft project built on Soroban. It was so helpful to see what others did first. It also includes frontend portion.
+- [ERC-721: Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
+- [Soroban's Advanced Tutorials: 'Tokens'](https://soroban.stellar.org/docs/tutorials/tokens): for generic token interface
+- [millionlumenhomepage.art](https://github.com/candela-network/millionlumenhomepage.art): I think this is the first nft project built on Soroban. It was so helpful to see what others did first. It also includes frontend portion.
