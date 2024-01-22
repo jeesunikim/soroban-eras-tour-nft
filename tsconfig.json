@@ -1,0 +1,13 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+      "outDir": "./frontend/dist/",
+      "noImplicitAny": true,
+      "target": "es2022",
+      "module": "es2022",
+      "jsx": "react",
+      "allowJs": true,
+      "moduleResolution": "node"
+    }
+  }
+  

@@ -1,8 +1,6 @@
 use crate::admin::{has_admin, read_admin, write_admin};
-use soroban_sdk::{
-    contract, contractimpl, log, Address, Env, String
-};
 use crate::storage_types::{DataKey, UserDataKey};
+use soroban_sdk::{contract, contractimpl, log, Address, Env, String};
 
 #[contract]
 pub struct ErasNftContract;
@@ -13,40 +11,58 @@ impl ErasNftContract {
         if has_admin(&env) {
             panic!("already initialized")
         }
-        
+
         // set the admin of ErasNftContract
         write_admin(&env, &admin);
 
         env.storage().instance().set(&DataKey::Name, &name);
-        env.storage()
-            .instance()
-            .set(&DataKey::Symbol, &symbol);
+        env.storage().instance().set(&DataKey::Symbol, &symbol);
     }
 
     // mint: enables admin to mint nfts
     pub fn mint(env: Env, to: Address, seat_num: u32) {
-        let admin = read_admin(&env);
-        admin.require_auth();
+        // let admin = read_admin(&env);
+        // admin.require_auth();
+        to.require_auth();
 
         // Check if the seat is taken
-        if env.storage().persistent().has(&UserDataKey::TokenOwner(seat_num)) {
+        if env
+            .storage()
+            .persistent()
+            .has(&UserDataKey::TokenOwner(seat_num))
+        {
             panic!("seat already taken");
         }
 
-        let is_taken: bool = env.storage().persistent().has(&UserDataKey::TokenOwner(seat_num));
+        let is_taken: bool = env
+            .storage()
+            .persistent()
+            .has(&UserDataKey::TokenOwner(seat_num));
 
         log!(&env, "mint - seat_num: {}", seat_num);
         log!(&env, "mint - is_seat_num_taken: {}", is_taken);
 
         // Minting
-        if !env.storage().persistent().has(&UserDataKey::TokenOwner(seat_num)) {
-            env.storage().persistent().set(&UserDataKey::TokenOwner(seat_num), &to);
-            env.storage().persistent().set(&UserDataKey::Seat(to.clone()), &seat_num);
+        if !env
+            .storage()
+            .persistent()
+            .has(&UserDataKey::TokenOwner(seat_num))
+        {
+            env.storage()
+                .persistent()
+                .set(&UserDataKey::TokenOwner(seat_num), &to);
+            env.storage()
+                .persistent()
+                .set(&UserDataKey::Seat(to.clone()), &seat_num);
         }
     }
 
-    pub fn owner_of(env: Env, seat_num: u32) -> Address{
-        let owner: Address = env.storage().persistent().get(&UserDataKey::TokenOwner(seat_num)).unwrap_or_else(|| panic!("this seat is not taken by anyone"));
+    pub fn owner_of(env: Env, seat_num: u32) -> Address {
+        let owner: Address = env
+            .storage()
+            .persistent()
+            .get(&UserDataKey::TokenOwner(seat_num))
+            .unwrap_or_else(|| panic!("this seat is not taken by anyone"));
 
         log!(&env, "owner_of - owner {}", owner);
 
@@ -61,14 +77,26 @@ impl ErasNftContract {
         from.require_auth();
 
         // check to make sure the receiver doesn't have a eras nft
-        if env.storage().persistent().has(&UserDataKey::Seat(to.clone())) {
+        if env
+            .storage()
+            .persistent()
+            .has(&UserDataKey::Seat(to.clone()))
+        {
             panic!("this receiver already has a nft ticket to eras tour");
         }
 
-        if env.storage().persistent().has(&UserDataKey::Seat(from.clone())) {
+        if env
+            .storage()
+            .persistent()
+            .has(&UserDataKey::Seat(from.clone()))
+        {
             env.storage().persistent().remove(&UserDataKey::Seat(from));
         }
-        env.storage().persistent().set(&UserDataKey::TokenOwner(seat_num), &to);
-        env.storage().persistent().set(&UserDataKey::Seat(to.clone()), &seat_num);
+        env.storage()
+            .persistent()
+            .set(&UserDataKey::TokenOwner(seat_num), &to);
+        env.storage()
+            .persistent()
+            .set(&UserDataKey::Seat(to.clone()), &seat_num);
     }
 }
