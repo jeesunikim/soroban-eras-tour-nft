@@ -2,9 +2,12 @@ import { isAllowed, setAllowed, getUserInfo } from "@stellar/freighter-api";
 import { Contract, networks } from "eras-tour-nft-client";
 
 // Related to Contract
-const admin = "GD6523U5GOVMLSWC4PCNRURU4QKDR6Q76YDAIJPDJDGYFEJ43GBG7VWK";
-// freighter related
-const freighterWrapper = document.querySelector("#freighter-wrapWrapper");
+// Replace with the value you get when running
+// "soroban config identity address swift"
+const admin = "GB6LZJYBWT5VTYSDAVXNQN6PAXITAZVTJSKDMRELPDQ3YYHIXZJF4RQT";
+
+// freighter related HTML elements
+const freighterWrapper = document.querySelector("#freighter-wrap");
 const ellipsis = document.querySelector(
   "#freighter-wrap .ellipsis"
 ) as HTMLElement;
@@ -21,9 +24,6 @@ const erasTourContract = new Contract({
 const mintButton = document.querySelector("#mint");
 let seat_number: number;
 
-console.log("**LOG** erasTourContract: ", erasTourContract);
-console.log("**LOG** networks: ", networks);
-
 // Freighter
 async function getPubKey() {
   const { publicKey } = await getUserInfo();
@@ -34,23 +34,41 @@ async function setLoggedIn() {
   const publicKey = await getPubKey();
   const shortenedPubKey =
     publicKey.substring(0, 4) + "..." + publicKey.substring(52);
+
   ellipsis.innerHTML = `Signed in as ${shortenedPubKey}`;
   ellipsis.title = publicKey;
 }
 
-if (await isAllowed()) {
-  if (await getPubKey()) {
-    setLoggedIn();
-  } else {
-    freighterWrapper.innerHTML =
-      "Freighter is locked.<br>Sign in & refresh the page.";
-  }
-} else {
-  freighterButton.addEventListener("click", async () => {
-    freighterButton.disabled = true;
-    await setAllowed();
-    await setLoggedIn();
+async function checkSeatOwner({ seat_num }: { seat_num: number }) {
+  const ownerOfTx = await erasTourContract.ownerOf({
+    seat_num,
   });
+
+  try {
+    const ownerOfTxResult = await ownerOfTx.simulate();
+    console.log("**LOG** ownerOfTxResult: ", ownerOfTxResult.result);
+  } catch (e) {
+    console.log("this seat is not taken by anyone");
+  }
+}
+
+async function mint_seat() {
+  console.log("mint_seat");
+  const loggedInUserPubKey = await getPubKey();
+
+  console.log("**LOG** loggedInUserPubKey: ", loggedInUserPubKey);
+  console.log("**LOG** seat_number: ", seat_number);
+  console.log("**LOG** hasContractInit: ", hasContractInit);
+
+  if (loggedInUserPubKey && seat_number) {
+    if (hasContractInit) {
+      console.log("**LOG** erasTourContract.mint");
+      await erasTourContract.mint({
+        to: loggedInUserPubKey,
+        seat_num: seat_number,
+      });
+    }
+  }
 }
 
 async function onSelectSeat() {
@@ -60,15 +78,6 @@ async function onSelectSeat() {
   let seat_info = document.querySelector(".info") as HTMLElement;
   let seat_number_text = document.getElementById("seat");
 
-  console.log("**LOG** seat_info: ", seat_info);
-
-  const ownerOfTx = await erasTourContract.ownerOf({
-    seat_num: 3,
-  });
-  const ownerOfTxResult = await ownerOfTx.simulate();
-
-  console.log("**LOG** ownerOfTxResult: ", ownerOfTxResult.result);
-
   seats.forEach((seat) => {
     seat.addEventListener("click", function (e) {
       const target = e.target as HTMLTextAreaElement;
@@ -77,7 +86,7 @@ async function onSelectSeat() {
       seat_number = parseInt(selected_seat_num);
       seat_number_text.innerHTML = selected_seat_num;
 
-      console.log("**LOG** seat_number_text: ", seat_number_text);
+      checkSeatOwner({ seat_num: seat_number });
 
       if (e.target) {
         target.style.fill = "#ff0000";
@@ -98,47 +107,35 @@ async function onSelectSeat() {
   });
 }
 
-async function mint_seat() {
-  const loggedInUserPubKey = await getPubKey();
+async function init() {
+  if (!hasContractInit) {
+    await erasTourContract.initialize({
+      admin,
+      name: "Eras Tour",
+      symbol: "eras",
+    });
 
-  console.log("**LOG** hasContractInit: ", hasContractInit);
+    hasContractInit = true;
+  }
 
-  if (loggedInUserPubKey && seat_number) {
-    if (!hasContractInit) {
-      await erasTourContract.initialize({
-        admin,
-        name: "Eras Tour",
-        symbol: "eras",
-      });
-
-      hasContractInit = true;
+  if (await isAllowed()) {
+    if (await getPubKey()) {
+      setLoggedIn();
+    } else {
+      freighterWrapper.innerHTML =
+        "Freighter is locked.<br>Sign in & refresh the page.";
     }
-
-    if (hasContractInit) {
-      console.log("**LOG** hasContractInit: ", hasContractInit);
-
-      console.log("**LOG** seat_number: ", seat_number);
-      console.log("**LOG** loggedInUserPubKey: ", loggedInUserPubKey);
-
-      const tx = await erasTourContract.mint({
-        to: "GCFAHXAXDMAHPTQ35W42DD2F6LR4E5SQUBEL2RDS5Y4SDRUGMFI4PRV2",
-        seat_num: seat_number,
-      });
-
-      console.log("**LOG** tx: ", tx);
-      const account = await tx.getAccount();
-      const pubKey = await tx.getPublicKey();
-
-      console.log("**LOG** account: ", account);
-      console.log("**LOG** pubKey: ", pubKey);
-
-      const test = await tx.simulate();
-      console.log("**LOG** test: ", test);
-      const test2 = await tx.signAndSend();
-      console.log("**LOG** test2: ", test2);
-    }
+  } else {
+    freighterButton.addEventListener("click", async () => {
+      freighterButton.disabled = true;
+      await setAllowed();
+      await setLoggedIn();
+    });
   }
 }
 
+init();
 onSelectSeat();
-mintButton.addEventListener("click", mint_seat);
+mintButton.addEventListener("click", async () => {
+  await mint_seat();
+});

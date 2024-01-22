@@ -5,9 +5,10 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
+    "setup": "./quickstart.sh {NETWORK:-testnet} && ./initialize.sh ${NETWORK:-testnet} && npm install",
     "start": "webpack serve --open",
     "server": "node server.js",
-    "postinstall": "soroban contract bindings typescript --network testnet --contract-id $(cat .soroban/hello-id) --output-dir node_modules/eras-tour-nft-client"
+    "postinstall": "soroban contract bindings typescript --network testnet --contract-id $(cat .soroban/eras-tour-nft-id) --output-dir node_modules/eras-tour-nft-client"
   },
   "exports": {
     "require": "./dist/cjs/index.js",

@@ -6,16 +6,16 @@ use soroban_sdk::{contracttype, Address};
 #[contracttype]
 // Contract State
 pub enum DataKey {
-    Admin,   // instance
-    Name,    // instance
-    Symbol,  // instance
+    Admin,  // instance
+    Name,   // instance
+    Symbol, // instance
 }
 
 #[derive(Clone)]
 #[contracttype]
 pub enum UserDataKey {
     TokenOwner(u32), // takes in 'seat_num' and return a 'fan address'
-    Seat(Address), // takes in 'fan address' and return 'seat_numæ
+    Seat(Address),   // takes in 'fan address' and return 'seat_numæ
 }
 
 // #[contracttype(storage=Instance)]

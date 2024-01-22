@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, Env};
 use crate::storage_types::DataKey;
+use soroban_sdk::{Address, Env};
 
 // why should owner use 'instance'?
 // persistent storage vs. instance; instance storage:
