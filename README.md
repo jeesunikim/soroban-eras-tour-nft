@@ -8,24 +8,25 @@ If you haven't setup your local environment to use Soroban, please go to Soroban
 
 ### Running the contract on Testnet
 
-#### 1. Configure the CLI for Testnet ([official doc](https://soroban.stellar.org/docs/getting-started/setup#configuring-the-cli-for-testnet))
+#### 1. Configure the CLI for Testnet ([official doc](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup#configuring-the-cli-for-testnet))
 
 ```
-soroban config network add --global testnet \
+stellar network add \
+  --global testnet \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015"
 ```
 
-#### 2. Configure an identity and fund the account using [Friendbot](https://developers.stellar.org/docs/fundamentals-and-concepts/testnet-and-pubnet#friendbot)
+#### 2. Configure an identity and fund the account using [Friendbot](https://developers.stellar.org/docs/build/smart-contracts/getting-started/setup#configure-an-identity)
 
 ```
-soroban config identity generate --global swift
+stellar keys generate --global swift --network testnet
 ```
 
 Fund the account using Friendbot
 
 ```
-curl "https://friendbot.stellar.org/?addr=$(soroban config identity address swift)"
+curl "https://friendbot.stellar.org/?addr=$(stellar keys address swift)"
 ```
 
 #### 3. Run `cargo test` to make sure the tests for the contract is passing
